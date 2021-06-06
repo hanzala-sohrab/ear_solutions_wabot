@@ -4,12 +4,30 @@ import requests
 from flask_pymongo import PyMongo
 from requests.structures import CaseInsensitiveDict
 import foo
+from zcrmsdk import ZCRMRestClient, ZCRMRecord, ZCRMModule
+import json
 
 app = Flask(__name__)
 
 app.config["MONGO_URI"] = foo.MONGO_URI
 mongo = PyMongo(app)
 db_operations = mongo.db.users
+
+configuration_dictionary = {
+    'apiBaseUrl': foo.apiBaseUrl,
+    'apiVersion': 'v2',
+    'currentUserEmail': foo.currentUserEmail,
+    'sandbox': 'False',
+    'applicationLogFilePath': './log/',
+    'client_id': foo.client_id,
+    'client_secret': foo.client_secret,
+    'redirect_uri': 'https://www.abc.com',
+    'accounts_url': 'https://accounts.zoho.in',
+    'token_persistence_path': '.',
+    'access_type': 'online'
+}
+
+ZCRMRestClient.get_instance().initialize(configuration_dictionary)
 
 APIUrl = foo.APIUrl
 token = foo.token
@@ -23,14 +41,16 @@ def get_message(phone):
 def save(user):
     lead = {}
     record = ZCRMRecord.get_instance('Leads')
+    name = user['name'].split()
     if len(name) > 1:
         lead['firstName'] = name[0]
         lead['lastName'] = " ".join(name[1:])
         record.set_field_value('First_Name', lead['firstName'])
     else:
         lead['lastName'] = " ".join(name)
-    
-    lead['mobile'] = user['_id']
+    record.set_field_value('Last_Name', lead['lastName'])
+
+    lead['mobile'] = str(user['_id'])
     record.set_field_value('Mobile', lead['mobile'])
 
     concern = user['concern']
@@ -47,7 +67,11 @@ def save(user):
     print(lead)
     resp = record.create()
     print(resp.status_code, " ", resp.code)
-    return resp
+    response = {
+        "status_code": resp.status_code,
+        "code": resp.code
+    }
+    return json.loads(json.dumps(response))
 
 @app.route('/', methods=['POST'])
 def home():
@@ -80,7 +104,7 @@ def home():
             update = {"$set": {"returnMessage": returnMessage, "concern": message}}
             db_operations.update_one(user, update)
             if message == "Customer Support":
-                return save(row=r)
+                return save(user=user)
         elif "Person" in value:
             if message == '1':
                 person = "For Myself"
@@ -95,8 +119,8 @@ def home():
                 message = "No"
             update = {"$set": {"returnMessage": "Connecting", "existing": message}}
             db_operations.update_one(user, update)
-            return save(row=r)
+            return save(user=user)
     return 'NoCommand'
 
 if(__name__) == '__main__':
-    app.run()
+    app.run(port=8000)
