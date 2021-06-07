@@ -7,10 +7,10 @@ import foo
 from zcrmsdk import ZCRMRestClient, ZCRMRecord, ZCRMModule
 import json
 
-app = Flask(__name__)
+application = Flask(__name__)
 
-app.config["MONGO_URI"] = foo.MONGO_URI
-mongo = PyMongo(app)
+application.config["MONGO_URI"] = foo.MONGO_URI
+mongo = PyMongo(application)
 db_operations = mongo.db.users
 
 configuration_dictionary = {
@@ -64,22 +64,22 @@ def save(user):
     record.set_field_value('Secondary_Source', "Whatsapp")
 
     lead = json.dumps(lead, indent = 4)
-    print(lead)
+    # print(lead)
     resp = record.create()
-    print(resp.status_code, " ", resp.code)
+    # print(resp.status_code, " ", resp.code)
     response = {
         "status_code": resp.status_code,
         "code": resp.code
     }
     return json.loads(json.dumps(response))
 
-@app.route('/', methods=['POST'])
+@application.route('/', methods=['POST'])
 def home():
     if request.method == 'POST':
         foobar = request.json
         phone = foobar['waId']
         message = foobar['text']
-        print(message)
+        # print(message)
         user = db_operations.find_one({'_id': int(phone)})
         if user is None:
             new_user = {'_id': int(phone), 'returnMessage': "Foo"}
@@ -123,4 +123,4 @@ def home():
     return 'NoCommand'
 
 if(__name__) == '__main__':
-    app.run(port=8000)
+    application.run(port=8000)
