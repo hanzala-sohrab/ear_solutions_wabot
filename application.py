@@ -64,9 +64,9 @@ def save(user):
     record.set_field_value('Secondary_Source', "Whatsapp")
 
     lead = json.dumps(lead, indent = 4)
-    # print(lead)
+    print(lead)
     resp = record.create()
-    # print(resp.status_code, " ", resp.code)
+    print(resp.status_code, " ", resp.code)
     response = {
         "status_code": resp.status_code,
         "code": resp.code
@@ -82,7 +82,14 @@ def home():
         # print(message)
         user = db_operations.find_one({'_id': int(phone)})
         if user is None:
-            new_user = {'_id': int(phone), 'returnMessage': "Foo"}
+            new_user = {
+                '_id': int(phone), 
+                'returnMessage': "Foo",
+                "name": "Foo Bar",
+                "concern": "Book an Appointment",
+                "person": "For Myself",
+                "existing": "No"
+            }
             db_operations.insert_one(new_user)
             user = db_operations.find_one({'_id': int(phone)})
         try:
@@ -91,6 +98,17 @@ def home():
             value = "Foo"
 
         if message in ["Hi", "hi", "Hello", "hello", "Hey", "hey"]:
+            db_operations.delete_one({'_id': int(phone)})
+            new_user = {
+                '_id': int(phone), 
+                'returnMessage': "Foo",
+                "name": "Foo Bar",
+                "concern": "Book an Appointment",
+                "person": "For Myself",
+                "existing": "No"
+            }
+            db_operations.insert_one(new_user)
+            user = db_operations.find_one({'_id': int(phone)})
             update = {"$set": {"returnMessage": "Name"}}
             db_operations.update_one(user, update)
         elif "Name" in value:
@@ -108,14 +126,16 @@ def home():
         elif "Person" in value:
             if message == '1':
                 person = "For Myself"
-            else:
+                update = {"$set": {"returnMessage": "Existing", "person": person}}
+                db_operations.update_one(user, update)
+            elif message in ['2', '3']:
                 person = "For Someone Else"
-            update = {"$set": {"returnMessage": "Existing", "person": person}}
-            db_operations.update_one(user, update)
+                update = {"$set": {"returnMessage": "Existing", "person": person}}
+                db_operations.update_one(user, update)
         elif "Existing" in value:
-            if message == '1' or message == 'y' or message == 'Y':
+            if message in ['1', 'y', 'Y']:
                 message = "Yes"
-            elif message == '2' or message == 'n' or message == 'N':
+            else:
                 message = "No"
             update = {"$set": {"returnMessage": "Connecting", "existing": message}}
             db_operations.update_one(user, update)
