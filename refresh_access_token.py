@@ -7,10 +7,8 @@ def refresh_token():
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
 
-    resp = requests.post(url, headers=headers)
-    print(resp.json())
-    return json.loads(resp.text)
+    return requests.post(url, headers=headers).text
 
 
 if __name__ == "__main__":
-    refresh_token()
+    print(refresh_token())
