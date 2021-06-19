@@ -1,7 +1,7 @@
 .vscode/
 __pycache__/
 *.pkl
-ear/
+ear_bot/
 foo.py
 log/
 # Elastic Beanstalk Files
