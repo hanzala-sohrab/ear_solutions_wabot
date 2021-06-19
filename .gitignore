@@ -1,6 +1,10 @@
 .vscode/
 __pycache__/
 *.pkl
-ear/
+ear_bot/
 foo.py
 log/
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
