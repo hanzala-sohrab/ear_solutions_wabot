@@ -47,10 +47,10 @@ def home():
 
         if message in ["Hi", "hi", "Hello", "hello", "Hey", "hey"]:
             lead = {
-                "Last_Name": "Foobar",
+                "Last_Name": "User",
                 "Mobile": phone,
                 "Lead_Source": "Website",
-                "Secondary_Source": "WhatsApp"
+                "Secondary_Source": "Whatsapp"
             }
             resp = upsert(lead)
             db_operations.delete_one({'_id': int(phone)})
@@ -58,7 +58,7 @@ def home():
                 '_id': int(phone),
                 "ID": resp['data'][0]['details']['id'],
                 'returnMessage': "Foo",
-                "name": "Foo Bar",
+                "name": "User",
                 "concern": "Book an Appointment",
                 "person": "For Myself",
                 "existing": "No"
@@ -72,12 +72,14 @@ def home():
             if len(name) > 1:
                 lead = {
                     "First_Name": name[0],
-                    "Last_Name": "".join(name[1:]),
+                    "Last_Name": " ".join(name[1:]),
+                    "Phone": phone,
                     "Mobile": phone
                 }
             else:
                 lead = {
                     "Last_Name": message,
+                    "Phone": phone,
                     "Mobile": phone
                 }
             resp = upsert(lead)
@@ -88,6 +90,11 @@ def home():
                 returnMessage = "Person"
             else:
                 returnMessage = "Thank you"
+            lead = {
+                "Concern": message,
+                "Mobile": phone
+            }
+            resp = upsert(lead)
             update = {"$set": {"returnMessage": returnMessage, "concern": message}}
             db_operations.update_one(user, update)
         elif "Person" in value:
@@ -108,7 +115,7 @@ def home():
             else:
                 message = "No"
             lead = {
-                "Existing_User": message,
+                "Existing_Aid_User": message,
                 "Mobile": phone
             }
             resp = upsert(lead)
